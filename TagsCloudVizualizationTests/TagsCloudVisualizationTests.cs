@@ -113,6 +113,7 @@ namespace TagsCloudVizualizationTests
         {
             var center = rectangles[0].GetCenter();
 
+            //CR(epeshk): в круге с получившимся радиусом могут не лежать все прямоугольники
             return rectangles.Select(r => r.Location.DistanceTo(center))
                 .Max();
         }
