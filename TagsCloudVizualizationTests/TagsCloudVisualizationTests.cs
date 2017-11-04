@@ -119,22 +119,24 @@ namespace TagsCloudVizualizationTests
 
         [Test]
         [Repeat(TestRepeatCount)]
-        public void GenerateDenseLayout()
+            public void GenerateDenseLayout()
         {
-            const double margin = 0.5;
+            const double margin = 0.5; //CR(epeshk): соотношение actualArea/expectedArea явно должно быть больше
 
             var rectangles = PlaceSeveralRandomRectangles(
                 RandomEntitiesFabric.GetRandomInt(40, 70));
             var radius = GetLayoutRadius(rectangles);
-            var expectedArea = radius * radius * Math.PI;
-            var actualArea = rectangles.Select(r => r.Width * r.Height)
+            var expectedArea = radius * radius * Math.PI; //CR(epeshk): expectedArea -> coveringCircleArea?
+            var actualArea = rectangles.Select(r => r.Width * r.Height) //CR(epeshk): extension .Area() ?
                 .Sum();
 
+            //CR(epeshk): непонятно, почему рассматривается два соотношения и что они значат
             Math.Min(expectedArea / actualArea, actualArea / expectedArea).Should()
                 .BeGreaterOrEqualTo(margin);
         }
 
         // TODO: не совсем понятно, как проверить, что облако круглое
+        //CR(epeshk): предыдущий тест примерно это и должен проверять?
         [Test]
         [Repeat(TestRepeatCount)]
         [Explicit]
@@ -148,6 +150,7 @@ namespace TagsCloudVizualizationTests
         }
     }
 
+    //CR(epeshk): лучше выносить классы в отдельные файлы. Так удобнее искать их в коде и просматривать историю в гите
     internal static class RandomEntitiesFabric
     {
         private const int MinHeight = 60;

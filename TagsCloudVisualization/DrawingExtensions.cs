@@ -6,6 +6,7 @@ namespace TagsCloudVisualization
 {
     public static class DrawingExtensions
     {
+        //CR(epeshk): добавить тесты на extension'ы
         public static Point GetCenter(this Rectangle rectangle)
         {
             return rectangle.Location + 
