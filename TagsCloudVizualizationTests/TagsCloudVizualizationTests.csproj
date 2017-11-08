@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{9D0D0CE3-8A83-47B9-8FF6-C6B0A181E554}</ProjectGuid>
     <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TagsCloudVizualizationTests</RootNamespace>
     <AssemblyName>TagsCloudVizualizationTests</AssemblyName>
@@ -50,6 +50,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DrawingExtensionsTests.cs" />
+    <Compile Include="ExampleLayoutGenerator.cs" />
+    <Compile Include="RandomEntitiesFabric.cs" />
     <Compile Include="TagsCloudVisualizationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
 
 namespace TagsCloudVisualization
 {
-    public class CloudPainter
+    public class CloudPainter : IDisposable
     {
         private readonly Bitmap bitmap;
         private readonly Graphics graphics;
-
-        private Pen pen = new Pen(Color.ForestGreen, 2);
+        private readonly Pen pen = new Pen(Color.ForestGreen, 2);
+        private bool disposed;
 
         public CloudPainter(Size canvasSize)
         {
@@ -22,6 +23,7 @@ namespace TagsCloudVisualization
 
         public CloudPainter PaintRectangles(IEnumerable<Rectangle> rectangles)
         {
+            CheckDisposed();
             graphics.DrawRectangles(pen, rectangles.ToArray());
             
             return this;
@@ -29,9 +31,24 @@ namespace TagsCloudVisualization
 
         public CloudPainter SaveToFile(string filePath)
         {
+            CheckDisposed();
             bitmap.Save(filePath);
             
             return this;
+        }
+
+        private void CheckDisposed() 
+        {
+            if(disposed) 
+                throw new ObjectDisposedException("Object has been already disposed");
+        }
+        
+        public void Dispose()
+        {
+            disposed = true;
+            bitmap.Dispose();
+            graphics.Dispose();
+            pen.Dispose();
         }
     }
 }

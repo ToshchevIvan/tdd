@@ -8,77 +8,71 @@ namespace TagsCloudVisualization
 {
     public class CircularCloudLayouter : ICloudLayouter
     {
-        public List<Rectangle> PlacedRectangles { get; } = new List<Rectangle>();
+        private const int SpiralStepInRadians = 1;
+
         private readonly Point center;
-        private readonly IEnumerator<Point> spiralEnumerator;
+        private readonly IEnumerable<Point> spiral;
+        private readonly List<Rectangle> placedRectangles = new List<Rectangle>();
 
         public CircularCloudLayouter(Point center)
         {
             if (center.X < 0 || center.Y < 0)
                 throw new ArgumentException($"Center point must have positive coordinates. Actual is {center}");
             this.center = center;
-            spiralEnumerator = GenerateSpiral(center).GetEnumerator();
+            spiral = GenerateSpiral(center);
         }
 
         public Rectangle PutNextRectangle(Size rectangleSize)
         {
-            var rectangle = Rectangle.Empty;
-            do
-            {
-                spiralEnumerator.MoveNext();
-                var nextLocation = spiralEnumerator.Current;
-                rectangle = DrawingExtensions.GetRectangleWithCenter(nextLocation, rectangleSize);
-            } while (IntersectsWithOthers(rectangle));
+            var rectangle = spiral
+                .Select(location => DrawingExtensions.CreateRectangleWithCenter(location, rectangleSize))
+                .First(r => !r.IntersectsWithAny(placedRectangles));
             rectangle = MoveRectangleCloserToCenter(rectangle);
-            PlacedRectangles.Add(rectangle);
-            
+            placedRectangles.Add(rectangle);
+
             return rectangle;
         }
 
         private static IEnumerable<Point> GenerateSpiral(Point center)
         {
-            var angle = 0;
+            var angleInRadians = 0;
+            var point = new Point(1, 1);
+            var centerOffset = (Size) center;
             while (true)
             {
-                yield return new Point(
-                    (int) Math.Abs(angle * Math.Cos(angle) + center.X),
-                    (int) Math.Abs(angle * Math.Sin(angle) + center.Y)
-                );
-                angle += 1;
+                yield return point.Multiply(angleInRadians)
+                    .Rotate(angleInRadians) + centerOffset;
+                angleInRadians += SpiralStepInRadians;
             }
-        }
-
-        private bool IntersectsWithOthers(Rectangle rectangle)
-        {
-            return PlacedRectangles.Any(r => r.IntersectsWith(rectangle));
         }
 
         private Rectangle MoveRectangleCloserToCenter(Rectangle rectangle)
         {
             var canMove = true;
-            do
+            while (canMove)
             {
                 var directionToCenter = center - (Size) rectangle.GetCenter();
-                var movedByXRectangle = rectangle;
-                if (!TryMove(ref movedByXRectangle, new Point(Math.Sign(directionToCenter.X), 0)))
-                    movedByXRectangle = rectangle;
-                var movedByYRectangle = movedByXRectangle;
-                if (!TryMove(ref movedByYRectangle, new Point(0, Math.Sign(directionToCenter.Y))))
-                    movedByYRectangle = movedByXRectangle;
-                if (movedByYRectangle == rectangle)
+                var offsetByX = new Point(Math.Sign(directionToCenter.X), 0);
+                var offsetByY = new Point(0, Math.Sign(directionToCenter.Y));
+                var movedRectangle = TryMove(rectangle, offsetByX);
+                movedRectangle = TryMove(movedRectangle, offsetByY);
+                if (movedRectangle == rectangle)
                     canMove = false;
                 else
-                    rectangle = movedByYRectangle;
-            } while (canMove);
+                    rectangle = movedRectangle;
+            }
 
             return rectangle;
         }
 
-        private bool TryMove(ref Rectangle rectangle, Point offset)
+        private Rectangle TryMove(Rectangle rectangle, Point offset)
         {
+            var oldRectangle = rectangle;
             rectangle.Offset(offset);
-            
-            return !IntersectsWithOthers(rectangle);
+
+            if (rectangle.IntersectsWithAny(placedRectangles))
+                return oldRectangle;
+            return rectangle;
         }
     }
 }
